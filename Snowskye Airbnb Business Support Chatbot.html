@@ -1,0 +1,237 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Snowskye Airbnb Support Chat</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial;
+}
+
+/* Floating Bubble */
+#chat-bubble {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 60px;
+  height: 60px;
+  background: #ff385c;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 26px;
+  cursor: pointer;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+  z-index: 9999;
+}
+
+/* Chat Container */
+#chat-container {
+  position: fixed;
+  bottom: 90px;
+  right: 20px;
+  width: 360px;
+  height: 520px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.35);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(20px);
+  pointer-events: none;
+  transition: all 0.25s ease;
+  z-index: 9999;
+}
+
+#chat-container.open {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+/* Header */
+#chat-header {
+  background: #ff385c;
+  color: white;
+  padding: 16px;
+  font-weight: 600;
+  display: flex;
+  justify-content: space-between;
+}
+
+#close-btn {
+  cursor: pointer;
+}
+
+/* Messages */
+#chat-box {
+  flex: 1;
+  padding: 15px;
+  overflow-y: auto;
+  background: #fafafa;
+}
+
+.message {
+  margin: 8px 0;
+  padding: 10px 14px;
+  border-radius: 14px;
+  max-width: 75%;
+}
+
+.bot {
+  background: #e9e9eb;
+}
+
+.user {
+  background: #ff385c;
+  color: white;
+  margin-left: auto;
+}
+
+/* Input */
+#input-area {
+  display: flex;
+  border-top: 1px solid #eee;
+}
+
+#input {
+  flex: 1;
+  border: none;
+  padding: 14px;
+  outline: none;
+}
+
+button {
+  background: #ff385c;
+  color: white;
+  border: none;
+  padding: 0 20px;
+  cursor: pointer;
+}
+
+</style>
+</head>
+<body>
+
+<div id="chat-bubble" onclick="toggleChat()">💬</div>
+
+<div id="chat-container">
+
+  <div id="chat-header">
+    Snowskye Airbnb Business Support
+    <span id="close-btn" onclick="toggleChat()">✕</span>
+  </div>
+
+  <div id="chat-box"></div>
+
+  <div id="input-area">
+    <input id="input" placeholder="Type your message..." />
+    <button onclick="sendMessage()">Send</button>
+  </div>
+
+</div>
+
+<script>
+
+const SERVER_URL = "https://lead-chatbot-gti5.onrender.com";
+
+let step = 0;
+let name = "";
+let email = "";
+
+const chatBox = document.getElementById("chat-box");
+const chatContainer = document.getElementById("chat-container");
+
+function toggleChat() {
+  chatContainer.classList.toggle("open");
+}
+
+function addMessage(text, sender) {
+
+  const div = document.createElement("div");
+  div.className = "message " + sender;
+  div.innerText = text;
+
+  chatBox.appendChild(div);
+  chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+function bot(text) {
+  addMessage(text, "bot");
+}
+
+function user(text) {
+  addMessage(text, "user");
+}
+
+async function sendMessage() {
+
+  const input = document.getElementById("input");
+  const text = input.value.trim();
+
+  if (!text) return;
+
+  user(text);
+  input.value = "";
+
+  if (step === 0) {
+
+    name = text;
+    step++;
+
+    setTimeout(() => {
+      bot("Nice to meet you " + name + "! What's your email?");
+    }, 500);
+
+  } else if (step === 1) {
+
+    email = text;
+    step++;
+
+    bot("Saving your info...");
+
+    try {
+
+      await fetch(SERVER_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          name: name,
+          email: email,
+          message: "Airbnb demo lead"
+        })
+      });
+
+      bot("✅ You're all set! Airbnb support will contact you soon.");
+
+    } catch (err) {
+
+      bot("❌ Error saving your info.");
+
+    }
+
+  }
+
+}
+
+// Welcome
+setTimeout(() => {
+  bot("👋 Welcome to Airbnb Support");
+  bot("What's your name?");
+}, 500);
+
+</script>
+
+</body>
+</html>
+```
